@@ -1,25 +1,37 @@
+//------------ CONFIG ---------------------------------
 var tolerance = 0.001;
+
+//------------ SCENE ---------------------------------
 var scene = new THREE.Scene();
 scene.background = new THREE.Color( 'grey' );
 
+//------------ CAMERA ---------------------------------
 var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
 camera.position.set(0, -300, 50);
 
+
+//------------ LIGHTS ---------------------------------
 light1 = new THREE.PointLight( 0xff0040, 2, 50 );
 scene.add(light1);
 
+//------------ RENDERER ---------------------------------
+var renderer = new THREE.WebGLRenderer({antialias: true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-// const modelPath='/assets/r2-d2.obj';
-const modelPath='/assets/A.obj';
-//const modelPath='/assets/teddy.obj';
-const materialPath='/assets/r2-d2.mtl';
+
+//------------ CONTROLS ---------------------------------
+var controls = new THREE.OrbitControls(camera, renderer.domElement);  
+scene.add(new THREE.AxisHelper(2));
 
 
 //------------ MATERIALS ---------------------------------
+const materialPath='/assets/r2-d2.mtl';
+
 var mtlLoader = new THREE.MTLLoader();
 mtlLoader.load(materialPath, function (materials) {
     mtlLoader.setTexturePath('/assets/');
-    objLoader.setMaterials(materials);
+    materials.preload();
 }   );
 
 var material = new THREE.MeshBasicMaterial({
@@ -34,44 +46,36 @@ var materialPlane = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide
 });
 
+//------------ GEOMETRY \\ MODELS ---------------------------------
+const modelPath='/assets/r2-d2.obj';
+//const modelPath='/assets/A.obj';
+//const modelPath='/assets/teddy.obj';
 
-var renderer = new THREE.WebGLRenderer({antialias: true});
-
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-  
-var controls = new THREE.OrbitControls(camera, renderer.domElement);
-  
-scene.add(new THREE.AxisHelper(2));
-  
 var planeGeom = new THREE.PlaneGeometry(3000, 3000);
 var plane = new THREE.Mesh(planeGeom, materialPlane);
 plane.position.y = -300;  
 scene.add(plane);
-console.log("1");
 
-//----------------------------------------------------------------
 //var objGeom = new THREE.TorusKnotGeometry(10, 3);
-var objGeom = new THREE.DodecahedronGeometry(10, 0);
+//var objGeom = new THREE.DodecahedronGeometry(10, 0);
 //var objGeom = new THREE.TetrahedronGeometry(10, 0);
 //var objGeom = new THREE.BoxGeometry(20, 20, 20);
 //var objGeom = new THREE.SphereGeometry(10, 5, 2);
-var obj = new THREE.Mesh(objGeom,material);
+// var stdModel = new THREE.Mesh(objGeom,material);
+// scene.add(obj);
 
-scene.add(obj);
 
-//----------------------------------------------------------------
-
-console.log("2");
 var objLoader = new THREE.OBJLoader();
 objLoader.load(modelPath, function(object) {
-  geometry=new THREE.Geometry().fromBufferGeometry(object.children["0"].geometry);
-  mesh=new THREE.Mesh(geometry,material);
-
-   scene.add(mesh);    
+  objModelGeometry = new THREE.Geometry().fromBufferGeometry(object.children["0"].geometry);
+  objModelMesh=new THREE.Mesh(objModelGeometry,material);
+  scene.add(objModelMesh);    
 });
 
-//------------------------------------------------------
+
+
+
+//---------------other functions ------------------------------------------------------------------ 
 var pressMe=addEventListener("click", drawIntersectionPoints, false);
 var pointsOfIntersection = new THREE.Geometry();
 var a = new THREE.Vector3(),
@@ -95,10 +99,10 @@ function drawIntersectionPoints() {
   plane.localToWorld(planePointC.copy(plane.geometry.vertices[plane.geometry.faces[0].c]));
   mathPlane.setFromCoplanarPoints(planePointA, planePointB, planePointC);
 
-  mesh.geometry.faces.forEach(function(face, idx) {
-    mesh.localToWorld(a.copy(obj.geometry.vertices[face.a]));
-    mesh.localToWorld(b.copy(obj.geometry.vertices[face.b]));
-    mesh.localToWorld(c.copy(obj.geometry.vertices[face.c]));
+  objModelMesh.geometry.faces.forEach(function(face, idx) {
+    objModelMesh.localToWorld(a.copy(objModelMesh.geometry.vertices[face.a]));
+    objModelMesh.localToWorld(b.copy(objModelMesh.geometry.vertices[face.b]));
+    objModelMesh.localToWorld(c.copy(objModelMesh.geometry.vertices[face.c]));
     lineAB = new THREE.Line3(a, b);
     lineBC = new THREE.Line3(b, c);
     lineCA = new THREE.Line3(c, a);
@@ -218,7 +222,7 @@ function getPairIndex(point, pointIndex, points) {
 
 
 
-
+//--------------- RENDER ------------------------------------------------------------------ 
 render();
 
 function render() {
@@ -226,4 +230,3 @@ function render() {
   renderer.render(scene, camera);
 }
 
-console.log("3");
