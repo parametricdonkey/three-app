@@ -5,68 +5,73 @@ scene.background = new THREE.Color( 'grey' );
 var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
 camera.position.set(0, -300, 50);
 
-var renderer = new THREE.WebGLRenderer({
-  antialias: true
+light1 = new THREE.PointLight( 0xff0040, 2, 50 );
+scene.add(light1);
+
+
+// const modelPath='/assets/r2-d2.obj';
+const modelPath='/assets/A.obj';
+//const modelPath='/assets/teddy.obj';
+const materialPath='/assets/r2-d2.mtl';
+
+
+//------------ MATERIALS ---------------------------------
+var mtlLoader = new THREE.MTLLoader();
+mtlLoader.load(materialPath, function (materials) {
+    mtlLoader.setTexturePath('/assets/');
+    objLoader.setMaterials(materials);
+}   );
+
+var material = new THREE.MeshBasicMaterial({
+  color: "blue",
+  wireframe: true
 });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
 
-var controls = new THREE.OrbitControls(camera, renderer.domElement);
-
-scene.add(new THREE.AxisHelper(2));
-
-var planeGeom = new THREE.PlaneGeometry(3000, 3000);
-//planeGeom.rotateX(-Math.PI / 2);
-var plane = new THREE.Mesh(planeGeom, new THREE.MeshBasicMaterial({
+var materialPlane = new THREE.MeshBasicMaterial({
   color: "lightgray",
   transparent: true,
   opacity: 0.125,
   side: THREE.DoubleSide
-}));
-plane.position.y = -300;
-//plane.rotation.x = Math.PI / 5;
+});
+
+
+var renderer = new THREE.WebGLRenderer({antialias: true});
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+  
+var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  
+scene.add(new THREE.AxisHelper(2));
+  
+var planeGeom = new THREE.PlaneGeometry(3000, 3000);
+var plane = new THREE.Mesh(planeGeom, materialPlane);
+plane.position.y = -300;  
 scene.add(plane);
+console.log("1");
 
-
-
-//-----material-----
-var material = new THREE.MeshPhongMaterial({
-  color: 0x80ee10,
-  shininess: 100,
-  side: THREE.DoubleSide,
-
-  // ***** Clipping setup (material): *****
-  //clippingPlanes: [ localPlane ],
-  //clipShadows: true
-});
-
-//###### OLD LOADER (BUT IT WORKS!!!)
-var objLoader;
-var mtlLoader = new THREE.MTLLoader();
-mtlLoader.setTexturePath('/assets/');
-mtlLoader.setPath('/assets/');
-mtlLoader.load('r2-d2.mtl', function (materials) {
-
-    materials.preload();
-
-    objLoader = new THREE.OBJLoader();
-    objLoader.setMaterials(materials);
-    objLoader.setPath('/assets/');
-    objLoader.load('r2-d2.obj', function (object) {
-    //objLoader.load('t4.obj', function (object) {
-        
-        scene.add(object);
-        // scene.add(mesh);
-        object.position.y -= 0;
-    });
-
-});
-
-console.log("obj "+objLoader);
-//console.log("obj.geometry "+objLoader.vertices);
-//console.log("obj.faces "+objLoader.children.bufferGeometry);
-
+//----------------------------------------------------------------
 //var objGeom = new THREE.TorusKnotGeometry(10, 3);
+var objGeom = new THREE.DodecahedronGeometry(10, 0);
+//var objGeom = new THREE.TetrahedronGeometry(10, 0);
+//var objGeom = new THREE.BoxGeometry(20, 20, 20);
+//var objGeom = new THREE.SphereGeometry(10, 5, 2);
+var obj = new THREE.Mesh(objGeom,material);
+
+scene.add(obj);
+
+//----------------------------------------------------------------
+
+console.log("2");
+var objLoader = new THREE.OBJLoader();
+objLoader.load(modelPath, function(object) {
+  geometry=new THREE.Geometry().fromBufferGeometry(object.children["0"].geometry);
+  mesh=new THREE.Mesh(geometry,material);
+
+   scene.add(mesh);    
+});
+
+//------------------------------------------------------
 var pressMe=addEventListener("click", drawIntersectionPoints, false);
 var pointsOfIntersection = new THREE.Geometry();
 var a = new THREE.Vector3(),
@@ -90,10 +95,10 @@ function drawIntersectionPoints() {
   plane.localToWorld(planePointC.copy(plane.geometry.vertices[plane.geometry.faces[0].c]));
   mathPlane.setFromCoplanarPoints(planePointA, planePointB, planePointC);
 
-  objLoader.geometry.faces.forEach(function(face, idx) {
-    objLoader.localToWorld(a.copy(obj.geometry.vertices[face.a]));
-    objLoader.localToWorld(b.copy(obj.geometry.vertices[face.b]));
-    objLoader.localToWorld(c.copy(obj.geometry.vertices[face.c]));
+  mesh.geometry.faces.forEach(function(face, idx) {
+    mesh.localToWorld(a.copy(obj.geometry.vertices[face.a]));
+    mesh.localToWorld(b.copy(obj.geometry.vertices[face.b]));
+    mesh.localToWorld(c.copy(obj.geometry.vertices[face.c]));
     lineAB = new THREE.Line3(a, b);
     lineBC = new THREE.Line3(b, c);
     lineCA = new THREE.Line3(c, a);
@@ -208,9 +213,17 @@ function getPairIndex(point, pointIndex, points) {
   return index;
 }
 
+
+
+
+
+
+
 render();
 
 function render() {
   requestAnimationFrame(render);
   renderer.render(scene, camera);
 }
+
+console.log("3");
