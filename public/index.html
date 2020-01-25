@@ -1,26 +1,35 @@
 <html>
 	<head>
-		<title>Three.js Boilerplate</title>
-		<style>
-			body { margin: 0; }
-			canvas { width: 100%; height: 100% }
-		</style>
+		<title>Parametric Donkey</title>
+		<link rel="stylesheet" href="styles.css">
+		
 	</head>
 	<body>
-        //<script src="https://threejs.org/build/three.min.js"></script>
+		<div class="sides">
+			<canvas id="WEBGL"></canvas>
+		</div>
+
+		<div class="middle">
+			<div id="convert">&#10145;&#xFE0E;</div>
+		</div>
+
+		<div class="sides">
+			<div id="SVG"></div>
+		</div>
+
+		<textarea class="textarea" id="source" cols=100 rows=10></textarea>
+
+
+        <script src="https://threejs.org/build/three.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/87/three.min.js"></script>
-        
-
-		<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+        <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 		<script src="OBJLoader.js"></script>
-		<script src="OBJLoader2.js"></script>
 		<script src="MTLLoader.js"></script>
+		<script src="SVGRenderer.js"></script>
+		<script src="Projector.js"></script>
+		<script src="XMLWriter.js"></script>
 		
-        <script src="app2.js"></script>
-
-        <button id="pressMe" style="position: absolute;">
-        PressMe
-        </button>        
-
+		<script src="app4.js"></script>
+		
 	</body>
 </html>
