@@ -10,11 +10,21 @@ var light;
 var material;
 var materialPlane;
 
+//adds
+var planeMesh;
+var objModelMesh;
+
+
+var controls;
+var pointsOfIntersection;
+var pointOfIntersection;
+
+var csv;
+
 init();
-//getSVG();
 
 function init(){
-    
+  
     //canvas
     canvas=document.getElementById("WEBGL");
     
@@ -24,7 +34,13 @@ function init(){
     
     //camera
     camera= new THREE.PerspectiveCamera(50, canvas.clientWidth/canvas.clientHeight,1,1000);
-    camera.position.set(0,-300,50);
+    // camera= new THREE.OrthographicCamera(canvas.clientWidth/-2,canvas.clientWidth/2, canvas.clientHeight/2,canvas.clientHeight/-2,-100,1000);
+
+    //camera.position.set(0,0,50); //FRONT
+    //camera.position.set(50,0,0); //RIGHT
+    camera.position.set(0,160,0); //TOP
+
+    
     
     //lights
     light = new THREE.DirectionalLight(0xffffff) ;
@@ -42,10 +58,10 @@ function init(){
       });
 
     //section plane
-    var planeGeom= new THREE.PlaneGeometry(100,100);
+    var planeGeom= new THREE.PlaneGeometry(300,300);
     planeGeom.rotateX(-Math.PI/2);
     
-    var planeMesh = new THREE.Mesh(planeGeom, materialPlane);
+    planeMesh = new THREE.Mesh(planeGeom, materialPlane);
     planeMesh.position.x=-1000;
     planeMesh.position.y=70;
     planeMesh.position.z=1000;
@@ -53,10 +69,13 @@ function init(){
 
     //OBJ geometry
     const modelPath='/assets/r2-d2.obj';
+    
     var objLoader = new THREE.OBJLoader();
     objLoader.load(modelPath, function(object) {
     objModelGeometry = new THREE.Geometry().fromBufferGeometry(object.children["0"].geometry);
     objModelMesh=new THREE.Mesh(objModelGeometry,material);
+    console.log("OBJ GEOMETRY --->");
+    console.log(objModelMesh);
     scene.add(objModelMesh);    
     });
 
@@ -66,48 +85,36 @@ function init(){
     mesh = new THREE.Mesh(geometry, material );
     mesh.position.z = -20;
     scene.add( mesh );
-
+    
     //renderer
-    renderer = new THREE.WebGLRenderer({antialias: true, canvas: canvas});
+    renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas});
     canvas.width=canvas.clientWidth;
     canvas.height=canvas.clientHeight;
-    renderer.setViewport(0,0,canvas.clientWidth,canvas.clientHeight);
+    // renderer.setViewport(0,0,canvas.clientWidth,canvas.clientHeight);
+    renderer.setViewport(0,0,canvas.width,canvas.height);
     
-    window.addEventListener('resize',onWindowResize, false);
-
     var button=document.getElementById("convert");
     button.addEventListener('click',svgSnapshot,false);    
 
-    var controls = new THREE.OrbitControls(camera, renderer.domElement);  
-    scene.add(new THREE.AxisHelper(10));   
+    var button2=document.getElementById("intersect");
+    button2.addEventListener('click',function(){
+      drawIntersectionPoints(planeMesh,objModelMesh);
+    },false);
+
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);    
+    scene.add(new THREE.AxisHelper(10));  
+    // controls.enableDamping = true;
+    // controls.dampingFactor = 0.25;
+    // controls.enableZoom = true;
 
     render();
-    //svgSnapshot();
-
-    
-}
-
-function getSVG(){
-    document.addEventListener("DOMContentLoaded", function(event){
-        var button=document.getElementById("convert");
-    button.addEventListener('click',svgSnapshot,false);
-    svgSnapshot();
-      });
-
-    //   window.addEventListener('load', function () {
-    //     alert("It's loaded!")
-    //   })
-    var button=document.getElementById("convert");
-    button.addEventListener('click',svgSnapshot,false);
-    svgSnapshot();
-    
-
 }
 
 //functions
 
 function render() {
-    //window.addEventListener('resize',onWindowResize, true);
+   // window.addEventListener('resize',onWindowResize, true);
     requestAnimationFrame(render);
     renderer.render(scene,camera );
 }
@@ -137,7 +144,8 @@ function svgSnapshot() {
 	removeChildrenFromNode(svgContainer);
 	var width  = svgContainer.getBoundingClientRect().width;
 	var height = svgContainer.getBoundingClientRect().height;
-	
+  //-----hide geometry-----
+  scene.remove(objModelMesh);
 	svgRenderer = new THREE.SVGRenderer();
 	svgRenderer.setClearColor( 0xffffff );
 	svgRenderer.setSize(width,height );
@@ -154,31 +162,31 @@ function svgSnapshot() {
 	 */
 	svgRenderer.domElement.removeAttribute("width");
 	svgRenderer.domElement.removeAttribute("height");
-	
-	document.getElementById("source").value = svgContainer.innerHTML.replace(/<path/g,"\n<path");
+  document.getElementById("source").value = svgContainer.innerHTML.replace(/<path/g,"\n<path");
 }
 
 
 
 //---------------other functions ------------------------------------------------------------------ 
 
-var pointsOfIntersection = new THREE.Geometry();
-var a = new THREE.Vector3(),
+function drawIntersectionPoints(plane,objModelMesh) {
+  console.log("start");
+
+  pointsOfIntersection = new THREE.Geometry();
+  var a = new THREE.Vector3(),
   b = new THREE.Vector3(),
   c = new THREE.Vector3();
-var planePointA = new THREE.Vector3(),
+  var planePointA = new THREE.Vector3(),
   planePointB = new THREE.Vector3(),
   planePointC = new THREE.Vector3();
-var lineAB = new THREE.Line3(),
+  var lineAB = new THREE.Line3(),
   lineBC = new THREE.Line3(),
   lineCA = new THREE.Line3();
 
-var pointOfIntersection = new THREE.Vector3();
-
-//drawIntersectionPoints();
-
-function drawIntersectionPoints() {
+  pointOfIntersection = new THREE.Vector3();
+  
   var mathPlane = new THREE.Plane();
+  console.log("middle");
   plane.localToWorld(planePointA.copy(plane.geometry.vertices[plane.geometry.faces[0].a]));
   plane.localToWorld(planePointB.copy(plane.geometry.vertices[plane.geometry.faces[0].b]));
   plane.localToWorld(planePointC.copy(plane.geometry.vertices[plane.geometry.faces[0].c]));
@@ -201,12 +209,16 @@ function drawIntersectionPoints() {
     color: 0x00ff00
   });
   var points = new THREE.Points(pointsOfIntersection, pointsMaterial);
- scene.add(points);
+ //scene.add(points);
 
   //var pairs = splitPairs(pointsOfIntersection.vertices);
 
   var contours = getContours(pointsOfIntersection.vertices, [], true);
   console.log("contours", contours);
+
+  console.log("pointsOfIntersection.vertices", pointsOfIntersection.vertices);
+
+  // csv = exportToCsv("file.csv",pointOfIntersection);
   
   contours.forEach(cntr => {
       let cntrGeom = new THREE.Geometry();
@@ -214,9 +226,58 @@ function drawIntersectionPoints() {
       let contour = new THREE.Line(cntrGeom, new THREE.LineBasicMaterial({
         color: "red"
       }));
-      scene.add(contour);
+      scene.add(contour);      
     });
+    return contours;
 }
+
+
+//-------------------------------------------------------------------------------------------------------------
+
+function exportToCsv(filename, rows) {
+  var processRow = function (row) {
+      var finalVal = '';
+      for (var j = 0; j < row.length; j++) {
+          var innerValue = row[j] === null ? '' : row[j].toString();
+          if (row[j] instanceof Date) {
+              innerValue = row[j].toLocaleString();
+          };
+          var result = innerValue.replace(/"/g, '""');
+          if (result.search(/("|,|\n)/g) >= 0)
+              result = '"' + result + '"';
+          if (j > 0)
+              finalVal += ',';
+          finalVal += result;
+      }
+      return finalVal + '\n';
+  };
+
+  var csvFile = '';
+  for (var i = 0; i < rows.length; i++) {
+      csvFile += processRow(rows[i]);
+  }
+
+  var blob = new Blob([csvFile], { type: 'text/csv;charset=utf-8;' });
+  if (navigator.msSaveBlob) { // IE 10+
+      navigator.msSaveBlob(blob, filename);
+  } else {
+      var link = document.createElement("a");
+      if (link.download !== undefined) { // feature detection
+          // Browsers that support HTML5 download attribute
+          var url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute("download", filename);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+      }
+  }
+  console.log("blob",blob);
+  return blob;
+}
+
+
 
 function setPointOfIntersection(line, plane, faceIdx) {
   pointOfIntersection = plane.intersectLine(line);
@@ -227,7 +288,6 @@ function setPointOfIntersection(line, plane, faceIdx) {
     pointsOfIntersection.vertices.push(p);
   };
 }
-
 
 function getContours(points, contours, firstRun) {
   //console.log("firstRun:", firstRun);

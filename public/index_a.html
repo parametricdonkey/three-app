@@ -5,10 +5,22 @@
 		
 	</head>
 	<body>
-		<canvas class="sides" id="WEBGL"></canvas>
-		<div id="convert">&#10145;&#xFE0E;</div>
-		<div id="intersect">&#10145;&#xFE0E;</div>
-		<div class="sides" id="SVG"></div>
+		
+		<div class="sides">
+			<canvas id="WEBGL"></canvas>
+		</div>
+		
+		
+
+		<div class="middle">
+			<div id="convert">&#10145;&#xFE0E;</div>
+			<div id="intersect">&#10145;&#xFE0E;</div>
+		</div>	
+
+		<div class="sides">
+			<div id="SVG"></div>
+		</div>
+
 		<textarea class="textarea" id="source" cols=100 rows=20></textarea>
 
 
@@ -21,6 +33,8 @@
 		<script src="Projector.js"></script>
 		<script src="OrbitControls.js"></script>
 		<!-- <script src="XMLWriter.js"></script> -->
+		
 		<script src="app4.js"></script>
-			</body>
+		
+	</body>
 </html>
