@@ -1,0 +1,72 @@
+/* canvas { 
+    width: 100%;
+     height: 100%;
+} */
+
+body {
+    /* Make the body take up entire window minus a margin:
+       http://stackoverflow.com/questions/485827/css-100-height-with-padding-margin
+     */
+    position:   absolute;
+    top:        0;
+    left:       0;
+    right:      0;
+    bottom:     0;
+    margin:     10px;
+    margin-top: 10px;
+    display:          flex;
+    flex-direction:   column;
+}
+
+
+
+.sides {
+    width: 100%;
+    height: 100%;
+    position: relative;
+
+}
+/* .canvas {
+
+    width: 500px;
+    height: 500px;
+    position: relative;
+} */
+
+
+
+.middle {
+    z-index:          99;
+}
+
+/* Relative positioning for .sides so h1 can be centered above it */
+/* .sides {
+    position:       relative;
+} */
+#convert {
+    color:          darkred;
+    font-size:      5vw;
+    cursor:         pointer;
+}
+#intersect {
+    color:          darkred;
+    font-size:      5vw;
+    cursor:         pointer;
+}
+#convert:hover {
+    color: red;
+}
+#intersect:hover {
+    color: red;
+}
+path:hover {
+    stroke:         red;
+    stroke-width:   2px;
+}
+h1 {
+    position:       absolute;
+    top:            0px;
+    width:          100%;
+    margin-top:     0px;
+    text-align:     center;
+}
